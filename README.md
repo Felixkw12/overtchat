@@ -36,7 +36,7 @@ on a server you control.
 
 <table>
   <tr>
-    <td width="33%" valign="top"><strong>Any model</strong><br>First-class setup and model discovery for local servers. OpenAI, Anthropic, Gemini, DeepSeek, Bedrock, and OpenRouter sit beside them.</td>
+    <td width="33%" valign="top"><strong>Any model</strong><br>First-class setup and model discovery for local servers. OpenAI, Anthropic, Gemini, DeepSeek, Bedrock, OpenRouter, and Opper sit beside them.</td>
     <td width="33%" valign="top"><strong>Live voice</strong><br>Speak and listen through bundled Parakeet and Kokoro. CPU is enough; a GPU or Apple Silicon makes it snappier.</td>
     <td width="33%" valign="top"><strong>Agents in your pocket</strong><br>Run your coding agents on your workstation or over SSH and drive them from any client, phone included.</td>
   </tr>

@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 
-import { PROVIDER_IDS } from "@/lib/providers/catalog";
+import { PROVIDER_IDS, PROVIDERS } from "@/lib/providers/catalog";
 import { ProviderConfigurationError } from "@/lib/providers/server/errors";
 import {
   createConfiguredLanguageModel,
@@ -588,6 +588,94 @@ describe("provider registry", () => {
       expect(body).not.toHaveProperty("reasoning_effort");
       expect(body).not.toHaveProperty("chat_template_kwargs");
     }
+  });
+
+  it("lists Opper models with their context length and modalities", async () => {
+    const fetchMock = vi.fn<typeof fetch>(() =>
+      Promise.resolve(
+        Response.json({
+          data: [
+            {
+              id: "gpt-5-mini",
+              context_length: 400_000,
+              architecture: {
+                input_modalities: ["text", "image"],
+                output_modalities: ["text"],
+              },
+              opper: { kind: "pool", max_output_tokens: 128_000 },
+            },
+          ],
+        }),
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      getProviderAdapter("opper").listModels({
+        providerId: "opper",
+        apiFormat: "auto",
+        baseUrl: PROVIDERS.opper.defaultBaseUrl,
+        apiKey: "opper-key",
+      }),
+    ).resolves.toEqual([
+      {
+        id: "gpt-5-mini",
+        contextWindow: 400_000,
+        capabilities: {
+          inputModalities: ["text", "image"],
+          outputModalities: ["text"],
+        },
+      },
+    ]);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.opper.ai/v3/compat/models",
+      expect.objectContaining({
+        headers: { Authorization: "Bearer opper-key" },
+      }),
+    );
+  });
+
+  it("sends Opper's configured thinking request with saved options", async () => {
+    let requestUrl: string | undefined;
+    let requestBody: Record<string, unknown> | undefined;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        requestUrl = String(input);
+        requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+        return Response.json(
+          { error: { message: "intentional test response" } },
+          { status: 400 },
+        );
+      }),
+    );
+    const configured = createConfiguredLanguageModel({
+      ...baseConfig,
+      providerId: "opper",
+      baseUrl: PROVIDERS.opper.defaultBaseUrl,
+      model: "gpt-5-mini",
+      providerOptions: { models: ["claude-sonnet-4-6"] },
+      reasoningLevel: "high",
+      reasoningRequest: { reasoning_effort: "high" },
+    });
+
+    expect(configured.providerOptionsKey).toBe("opper");
+    expect(configured.promptCacheStrategy).toBeUndefined();
+    await expect(
+      generateText({
+        model: configured.model,
+        prompt: "Hello",
+        providerOptions: configured.providerOptions,
+      }),
+    ).rejects.toThrow("intentional test response");
+
+    expect(requestUrl).toBe("https://api.opper.ai/v3/compat/chat/completions");
+    expect(requestBody).toMatchObject({
+      model: "gpt-5-mini",
+      models: ["claude-sonnet-4-6"],
+      reasoning_effort: "high",
+    });
+    expect(requestBody).not.toHaveProperty("chat_template_kwargs");
   });
 
   it("rejects malformed endpoints and missing registered-provider credentials", () => {

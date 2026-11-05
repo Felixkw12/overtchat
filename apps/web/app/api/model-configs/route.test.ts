@@ -163,6 +163,7 @@ describe("per-user models", () => {
 describe("admin model configs", () => {
   const rows = [
     { id: "router", providerId: "openrouter", apiFormat: "auto" },
+    { id: "opper", providerId: "opper", apiFormat: "auto" },
     { id: "local", providerId: "vllm", apiFormat: "auto" },
   ];
 
@@ -182,6 +183,7 @@ describe("admin model configs", () => {
     await expect(response.json()).resolves.toEqual({
       modelConfigs: [
         { id: "router", providerId: "custom", apiFormat: "openai-chat" },
+        { id: "opper", providerId: "custom", apiFormat: "openai-chat" },
         { id: "local", providerId: "vllm", apiFormat: "auto" },
       ],
     });

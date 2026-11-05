@@ -20,6 +20,7 @@ export const MODEL_BRAND_ICON_IDS = [
   "ollama",
   "openai",
   "openrouter",
+  "opper",
   "poolside",
   "qwen",
   "sglang",

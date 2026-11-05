@@ -102,6 +102,36 @@ describe("model updates", () => {
     });
   });
 
+  it("keeps an Opper model that an older client saves as custom", async () => {
+    const opper = {
+      ...existing,
+      providerId: "opper",
+      baseUrl: "https://api.opper.ai/v3/compat",
+      providerOptions: null,
+    };
+    mocks.get.mockResolvedValue(opper);
+
+    const response = await PATCH(
+      request({
+        ...opper,
+        providerId: "custom",
+        apiFormat: "openai-chat",
+        label: "Renamed",
+      }),
+      params,
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.update.mock.calls[0][1]).toMatchObject({
+      label: "Renamed",
+      providerId: "opper",
+      apiFormat: "auto",
+    });
+    await expect(response.json()).resolves.toMatchObject({
+      modelConfig: { providerId: "custom", apiFormat: "openai-chat" },
+    });
+  });
+
   it("lets a current client change an OpenRouter model to custom", async () => {
     mocks.get.mockResolvedValue({
       ...existing,

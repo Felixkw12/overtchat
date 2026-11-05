@@ -7,6 +7,7 @@ export const PROVIDER_IDS = [
   "deepseek",
   "bedrock",
   "openrouter",
+  "opper",
   "vllm",
   "llamacpp",
   "sglang",
@@ -90,6 +91,15 @@ export const PROVIDERS: Record<ProviderId, ProviderDefinition> = {
     defaultBaseUrl: "https://openrouter.ai/api/v1",
     defaultApiFormat: "auto",
     modelPlaceholder: "openai/gpt-5-mini",
+    requiresApiKey: true,
+  },
+  opper: {
+    id: "opper",
+    label: "Opper",
+    iconId: "opper",
+    defaultBaseUrl: "https://api.opper.ai/v3/compat",
+    defaultApiFormat: "auto",
+    modelPlaceholder: "gpt-5-mini",
     requiresApiKey: true,
   },
   vllm: {
